@@ -1,0 +1,97 @@
+@page "/students/{studentId}"
+@using BlazorApp1.Data
+
+<PageTitle>Student Details</PageTitle>
+@inject StudentsService _studentsService
+
+<h1>Student Details</h1>
+
+@if (_student == null)
+{
+    <p>
+        <em>Loading...</em>
+    </p>
+}
+else
+{
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <div class="container">
+                    <div class="row mb-4">
+                        <div class="col-4 p-2">
+                            First Name
+                        </div>
+                        <div class="col-6">
+                            <div class="border p-2">
+                                @_student.FirstName
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-4 p-2">
+                            Last Name
+                        </div>
+                        <div class="col-6">
+                            <div class="border p-2">
+                                @_student.LastName
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-4 p-2">
+                            Birth Date
+                        </div>
+                        <div class="col-6">
+                            <div class="border p-2">
+                                @_student.Birthdate.ToShortDateString()
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-4 p-2">
+                            Studies
+                        </div>
+                        <div class="col-6">
+                            <div class="border p-2">
+                                @_student.Studies
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col d-flex flex-column align-items-center">
+                <div class="container  mb-4">
+                    <div class="row">
+                        <div class="col-2 p-2">
+                            Avatar
+                        </div>
+                        <div class="col">
+                            <div class="border p-2 text-wrap">
+                                @_student.Avatar
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <img class="rounded-circle" width="150" src="@_student.Avatar" alt="avatar"/>
+            </div>
+        </div>
+    </div>
+}
+
+<a class="text-decoration-none btn-primary px-4 py-2" href="/students">Return</a>
+
+@code {
+
+    [Parameter]
+    public string StudentId { get; set; }
+
+    private Student? _student;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _student = await _studentsService.GetStudentsByIdAsync(int.Parse(StudentId));
+    }
+
+}

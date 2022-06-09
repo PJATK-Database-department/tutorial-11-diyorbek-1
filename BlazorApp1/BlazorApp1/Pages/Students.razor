@@ -1,0 +1,130 @@
+﻿@page "/students"
+@using BlazorApp1.Data
+
+<PageTitle>Students</PageTitle>
+@inject StudentsService _studentsService
+@inject NavigationManager _navManager
+
+<h1>Students</h1>
+
+@if (_students == null)
+{
+    <p>
+        <em>Loading...</em>
+    </p>
+}
+else
+{
+    <table class="table table-hover table-bordered text-center">
+        <thead>
+        <tr>
+            <th>Avatar</th>
+            <th role="button" @onclick="() => SortBy(s => s.FirstName)">First Name</th>
+            <th role="button" @onclick="() => SortBy(s => s.LastName)">Last Name</th>
+            <th role="button" @onclick="() => SortBy(s => s.Birthdate)">Birthdate</th>
+            <th role="button" @onclick="() => SortBy(s => s.Studies)">Studies</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var student in _students)
+        {
+            <tr role="button" @onclick="() => OpenStudentDetailsPage(student.Id)">
+                <td class="align-middle">
+                    <img src="@student.Avatar" width="80" alt="avatar" class="rounded-circle"/>
+                </td>
+                <td class="align-middle">@student.FirstName</td>
+                <td class="align-middle">@student.LastName</td>
+                <td class="align-middle">@student.Birthdate.ToShortDateString()</td>
+                <td class="align-middle">@student.Studies</td>
+                <td class="align-middle" @onclick:stopPropagation="true" @onclick:preventDefault="true">
+                    <button
+                        type="button"
+                        class="btn btn-danger"
+                        data-toggle="modal"
+                        data-target="#exampleModal"
+                        @onclick="() => ShowModal(student.Id)">
+                        <span class="oi oi-x"></span>
+                    </button>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+<!-- Modal -->
+@if (Show)
+{
+    <div class="modal fade show" style="display: block" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Delete</h5>
+                </div>
+                <div class="modal-body">
+                    Delete selected student?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="CloseModal">Cancel</button>
+                    <button type="button" class="btn btn-primary" @onclick="RemoveStudent">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (Show)
+{
+    <div class="modal-backdrop fade show"></div>
+}
+
+@code {
+    private bool Show { get; set; }
+    private Student[]? _students;
+    private int _selectedStudentId = -1;
+    private bool _isAscending;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _students = await _studentsService.GetStudentsAsync();
+    }
+
+    private void RemoveStudent()
+    {
+        _students = _students?.Where(s => s.Id != _selectedStudentId).ToArray();
+        CloseModal();
+    }
+
+    private void ShowModal(int studentId)
+    {
+        Show = true;
+        _selectedStudentId = studentId;
+    }
+
+    private void CloseModal()
+    {
+        Show = false;
+        _selectedStudentId = -1;
+    }
+
+    private void OpenStudentDetailsPage(int studentId)
+    {
+        _navManager.NavigateTo($"/students/{studentId}");
+    }
+
+    private void SortBy<T>(Func<Student, T> func)
+    {
+        if (!_isAscending)
+        {
+            _students = _students?.OrderBy(func).ToArray();
+            _isAscending = true;
+        }
+        else
+        {
+            _students = _students?.OrderByDescending(func).ToArray();
+            _isAscending = false;
+        }
+    }
+
+}
